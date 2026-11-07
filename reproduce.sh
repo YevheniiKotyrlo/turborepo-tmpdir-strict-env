@@ -27,7 +27,7 @@ run_task() {
     exit 2
   fi
 }
-run_task alone bun --cwd apps/app-a run tmpdir
+run_task alone bun run --cwd=apps/app-a tmpdir
 run_task strict bunx turbo run tmpdir --filter=app-a --log-prefix=none
 run_task loose bunx turbo run tmpdir --filter=app-a --log-prefix=none --env-mode=loose
 alone=$(grep '^TMPDIR=' "$logs/alone.log" || true)
