@@ -2,7 +2,7 @@
 # Runs app-a's `tmpdir` script, which prints TMPDIR, os.tmpdir() and REPRO_UNLISTED, a variable no pass-through list
 # names, with TMPDIR set to a new folder and REPRO_UNLISTED=1, three ways: through bun alone, through
 # `turbo run tmpdir` (strict environment mode, the default), and through `turbo run tmpdir --env-mode=loose`. Prints
-# `turbo info` and the line each run's task printed.
+# `turbo info`, the line each run's task printed, and the whole output of each run whose line is not the one expected.
 # Exits 1 while the strict-mode task runs without TMPDIR and without REPRO_UNLISTED, 0 once it has TMPDIR and still not
 # REPRO_UNLISTED, and 2 when a step fails, bun alone or loose mode does not print both, or strict mode prints anything
 # else, REPRO_UNLISTED among it.
@@ -27,6 +27,10 @@ run_task() {
     exit 2
   fi
 }
+show_output() {
+  echo "$1 printed:"
+  cat "$logs/$1.log"
+}
 run_task alone bun run --cwd=apps/app-a tmpdir
 run_task strict bunx turbo run tmpdir --filter=app-a --log-prefix=none
 run_task loose bunx turbo run tmpdir --filter=app-a --log-prefix=none --env-mode=loose
@@ -40,6 +44,8 @@ echo "turbo run tmpdir: ${strict:-no TMPDIR line}"
 echo "turbo run tmpdir --env-mode=loose: ${loose:-no TMPDIR line}"
 everything="TMPDIR=$folder, os.tmpdir()=$folder, REPRO_UNLISTED=1"
 if [ "$alone" != "$everything" ] || [ "$loose" != "$everything" ]; then
+  [ "$alone" = "$everything" ] || show_output alone
+  [ "$loose" = "$everything" ] || show_output loose
   echo 'bun alone or loose mode did not print the folder TMPDIR names and REPRO_UNLISTED'
   exit 2
 fi
@@ -53,5 +59,6 @@ case $strict in
     exit 1
     ;;
 esac
+show_output strict
 echo 'strict mode printed neither the folder alone nor TMPDIR unset'
 exit 2
