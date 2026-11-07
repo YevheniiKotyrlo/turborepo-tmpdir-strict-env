@@ -1,35 +1,57 @@
 #!/usr/bin/env bash
-# Runs app-a's `tmpdir` script, which prints TMPDIR and os.tmpdir(), with TMPDIR set to a new folder three ways: through
-# bun alone, through `turbo run tmpdir` (strict environment mode, the default), and through `turbo run tmpdir
-# --env-mode=loose`. Prints `turbo info` and what each run printed.
-# Exits 1 while the strict-mode task loses TMPDIR that the other two runs keep, 0 once all three print the folder, and 2
-# when a step fails or bun alone or loose mode does not print the folder.
+# Runs app-a's `tmpdir` script, which prints TMPDIR, os.tmpdir() and REPRO_UNLISTED, a variable no pass-through list
+# names, with TMPDIR set to a new folder and REPRO_UNLISTED=1, three ways: through bun alone, through
+# `turbo run tmpdir` (strict environment mode, the default), and through `turbo run tmpdir --env-mode=loose`. Prints
+# `turbo info` and the line each run's task printed.
+# Exits 1 while the strict-mode task runs without TMPDIR and without REPRO_UNLISTED, 0 once it has TMPDIR and still not
+# REPRO_UNLISTED, and 2 when a step fails, bun alone or loose mode does not print both, or strict mode prints anything
+# else, REPRO_UNLISTED among it.
 set -Eeuo pipefail
 trap 'echo "failed: $BASH_COMMAND" >&2; exit 2' ERR
 cd "$(dirname "$0")"
-bun install > install.log 2>&1 || { cat install.log; exit 2; }
+bun install --frozen-lockfile > install.log 2>&1 || { cat install.log; exit 2; }
 folder=$(mktemp -d)
-trap 'rm -rf "$folder"' EXIT
+logs=$(mktemp -d)
+trap 'rm -rf "$folder" "$logs"' EXIT
 echo '$ turbo info'
-info=$(bunx turbo info 2>&1)
-printf '%s\n' "$info"
-tmpdir_line() { grep '^TMPDIR=' || true; }
-expected="TMPDIR=$folder, os.tmpdir()=$folder"
-alone=$(cd apps/app-a && TMPDIR=$folder bun run tmpdir 2>&1 | tmpdir_line)
-strict=$(TMPDIR=$folder bunx turbo run tmpdir --filter=app-a --log-prefix=none 2>&1 | tmpdir_line)
-loose=$(TMPDIR=$folder bunx turbo run tmpdir --filter=app-a --log-prefix=none --env-mode=loose 2>&1 | tmpdir_line)
+bunx turbo info 2>&1
+export TMPDIR=$folder REPRO_UNLISTED=1
+# Runs the command after the name, keeping its output in a log of that name; prints the log and exits 2 when it fails.
+run_task() {
+  local name=$1 status=0
+  shift
+  "$@" > "$logs/$name.log" 2>&1 || status=$?
+  if [ "$status" != 0 ]; then
+    cat "$logs/$name.log"
+    echo "$name: $* exited $status"
+    exit 2
+  fi
+}
+run_task alone bun --cwd apps/app-a run tmpdir
+run_task strict bunx turbo run tmpdir --filter=app-a --log-prefix=none
+run_task loose bunx turbo run tmpdir --filter=app-a --log-prefix=none --env-mode=loose
+alone=$(grep '^TMPDIR=' "$logs/alone.log" || true)
+strict=$(grep '^TMPDIR=' "$logs/strict.log" || true)
+loose=$(grep '^TMPDIR=' "$logs/loose.log" || true)
 echo
-echo "TMPDIR set to $folder"
+echo "TMPDIR set to $folder, REPRO_UNLISTED set to 1"
 echo "bun run tmpdir: ${alone:-no TMPDIR line}"
 echo "turbo run tmpdir: ${strict:-no TMPDIR line}"
 echo "turbo run tmpdir --env-mode=loose: ${loose:-no TMPDIR line}"
-if [ "$alone" != "$expected" ] || [ "$loose" != "$expected" ]; then
-  echo 'bun alone or loose mode did not print the folder TMPDIR names'
+everything="TMPDIR=$folder, os.tmpdir()=$folder, REPRO_UNLISTED=1"
+if [ "$alone" != "$everything" ] || [ "$loose" != "$everything" ]; then
+  echo 'bun alone or loose mode did not print the folder TMPDIR names and REPRO_UNLISTED'
   exit 2
 fi
-if [ "$strict" = "$expected" ]; then
-  echo 'strict mode keeps TMPDIR'
-  exit 0
-fi
-echo 'strict mode drops TMPDIR'
-exit 1
+case $strict in
+  "TMPDIR=$folder, os.tmpdir()=$folder, REPRO_UNLISTED=<unset>")
+    echo 'strict mode keeps TMPDIR and still leaves out REPRO_UNLISTED'
+    exit 0
+    ;;
+  'TMPDIR=<unset>, os.tmpdir()='*', REPRO_UNLISTED=<unset>')
+    echo 'strict mode drops TMPDIR'
+    exit 1
+    ;;
+esac
+echo 'strict mode printed neither the folder alone nor TMPDIR unset'
+exit 2

@@ -5,7 +5,7 @@
     "build": "mkdir -p dist && echo \"Your application output!\" > dist/app-output.txt && echo \"Application A is built!\"",
     "lint": "echo \"Linted!\"",
     "check-types": "echo \"Types checked!\"",
-    "tmpdir": "node -e \"console.log('TMPDIR=' + (process.env.TMPDIR ?? '<unset>') + ', os.tmpdir()=' + require('os').tmpdir())\""
+    "tmpdir": "node -e \"console.log('TMPDIR=' + (process.env.TMPDIR ?? '<unset>') + ', os.tmpdir()=' + require('os').tmpdir() + ', REPRO_UNLISTED=' + (process.env.REPRO_UNLISTED ?? '<unset>'))\""
   },
   "dependencies": {
     "pkg-a": "*",

@@ -1,0 +1,65 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "my-turborepo",
+      "devDependencies": {
+        "turbo": "2.11.11-canary.2",
+      },
+    },
+    "apps/app-a": {
+      "name": "app-a",
+      "dependencies": {
+        "pkg-a": "*",
+        "tooling-config": "*",
+      },
+    },
+    "apps/app-b": {
+      "name": "app-b",
+      "dependencies": {
+        "tooling-config": "*",
+      },
+    },
+    "packages/pkg-a": {
+      "name": "pkg-a",
+      "dependencies": {
+        "tooling-config": "*",
+      },
+    },
+    "packages/pkg-b": {
+      "name": "pkg-b",
+      "dependencies": {
+        "tooling-config": "*",
+      },
+    },
+    "packages/tooling-config": {
+      "name": "tooling-config",
+    },
+  },
+  "packages": {
+    "@turbo/darwin-64": ["@turbo/darwin-64@2.11.11-canary.2", "", { "os": "darwin", "cpu": "x64" }, "sha512-T6/ohmpFhDVDcbPHQzYwQTPgacTbG+NhGSvJHMJ3FbZKyrQ3N0Jm8YNgfh7hFebIu3zywWU4oCVmk2Zz2+NTgw=="],
+
+    "@turbo/darwin-arm64": ["@turbo/darwin-arm64@2.11.11-canary.2", "", { "os": "darwin", "cpu": "arm64" }, "sha512-oR9947Hq9zCuK27A2xlEXYFO90I5PKgcWnvYZIl7fcuwxMSWrS3HtLvAO91aDDQk8bT+uPFqRDoMX29HXXkEbA=="],
+
+    "@turbo/linux-64": ["@turbo/linux-64@2.11.11-canary.2", "", { "os": [ "linux", "android", ], "cpu": "x64" }, "sha512-tIG7FCMW5U+6rml1kqutSac0zX2pr21zofgXtzmRTTzAE+6hjP0zWiq94+ttHk1WpUh48a9/DnuC2dV9hun0cg=="],
+
+    "@turbo/linux-arm64": ["@turbo/linux-arm64@2.11.11-canary.2", "", { "os": [ "linux", "android", ], "cpu": "arm64" }, "sha512-w+2QXKoZ9GEciVJlAUJLEyeNee8T4TVES4xVDnOoBqzXpSMupRKTUKyiLwcTky5qIcpWEGYqo9uG52ORN9udrA=="],
+
+    "@turbo/windows-64": ["@turbo/windows-64@2.11.11-canary.2", "", { "os": "win32", "cpu": "x64" }, "sha512-qR+npweh5/Y1Jsz2k10kA2lQceDqiagrINcMQx2DJqEYMrwJK2oAQDxqf6zRzT+xA6wYxSvplmnvz7TUCuG66w=="],
+
+    "@turbo/windows-arm64": ["@turbo/windows-arm64@2.11.11-canary.2", "", { "os": "win32", "cpu": "arm64" }, "sha512-QHCTLuXwJCO6X2GMPmxEP/egidr1fzDmXNAkn/0Km6zxVQisKuKt7vcCVNToa9KPT2QjZyDd1pzmC7SrBMRtwA=="],
+
+    "app-a": ["app-a@workspace:apps/app-a"],
+
+    "app-b": ["app-b@workspace:apps/app-b"],
+
+    "pkg-a": ["pkg-a@workspace:packages/pkg-a"],
+
+    "pkg-b": ["pkg-b@workspace:packages/pkg-b"],
+
+    "tooling-config": ["tooling-config@workspace:packages/tooling-config"],
+
+    "turbo": ["turbo@2.11.11-canary.2", "", { "optionalDependencies": { "@turbo/darwin-64": "2.11.11-canary.2", "@turbo/darwin-arm64": "2.11.11-canary.2", "@turbo/linux-64": "2.11.11-canary.2", "@turbo/linux-arm64": "2.11.11-canary.2", "@turbo/windows-64": "2.11.11-canary.2", "@turbo/windows-arm64": "2.11.11-canary.2" }, "bin": { "turbo": "bin/turbo" } }, "sha512-dksVswueCigPV1PrAp71LxEpqpIetYvkm8IWT8mZ+EWJZuT8JewkNnYBpDnnmU/15pSjMGOsm5my+ZCYro590Q=="],
+  }
+}

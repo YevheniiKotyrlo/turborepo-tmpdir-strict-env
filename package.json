@@ -6,7 +6,7 @@
     "node": ">=24.19.0"
   },
   "devDependencies": {
-    "turbo": "^2.11.11-canary.2"
+    "turbo": "2.11.11-canary.2"
   },
   "devEngines": {
     "packageManager": {
